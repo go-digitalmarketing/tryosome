@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try 'o' Some · beauty that moves you</title>
+    <!-- Font Awesome 6 (free) for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #fefaf5;
+            color: #2d2a24;
+            overflow-x: hidden;
+        }
+
+        /* scroll driven animations – subtle motion with Intersection Observer (JS) + inline transforms */
+        section {
+            position: relative;
+        }
+
+        /* ----- global typography & containers ----- */
+        h1, h2, h3 {
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #cf9e8c;
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 6px 14px rgba(207, 158, 140, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #cf9e8c;
+            color: #cf9e8c;
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: #cf9e8c;
+            color: white;
+        }
+        .btn:hover {
+            background: #b57c68;
+            transform: scale(1.02);
+        }
+
+        /* navigation — clean, inspired by knockoutcosmetics header */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+            background: #ffffffdd;
+            backdrop-filter: blur(6px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid #f0e4dc;
+        }
+        .logo {
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: #b4826e;
+            letter-spacing: -0.02em;
+        }
+        .logo span {
+            font-weight: 300;
+            color: #cf9e8c;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #3f3a35;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .nav-links a i {
+            margin-right: 6px;
+            color: #cf9e8c;
+        }
+        .nav-icons {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        /* HERO section — image 1 / 2 style: bottle moves side to side on scroll */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            background: linear-gradient(145deg, #fff4ed 0%, #ffeede 100%);
+            overflow: hidden;
+            position: relative;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            width: 100%;
+        }
+        .hero-text {
+            z-index: 2;
+        }
+        .hero-text h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            line-height: 1;
+            color: #3e2c24;
+            margin-bottom: 1.5rem;
+        }
+        .hero-text h1 span {
+            color: #cf9e8c;
+            font-style: italic;
+            display: inline-block;
+        }
+        .hero-text p {
+            font-size: 1.2rem;
+            max-width: 450px;
+            margin-bottom: 2.5rem;
+            color: #5f4e45;
+        }
+        .hero-bottle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            will-change: transform;
+            transition: transform 0.1s ease-out; /* will be overridden by JS */
+        }
+        .hero-bottle img {
+            max-width: 85%;
+            height: auto;
+            filter: drop-shadow(0 25px 20px #bba28e);
+            transform-origin: center;
+        }
+
+        /* bottle shift class – applied on scroll */
+        .bottle-shift {
+            transform: translateX(40px) scale(1.02);
+        }
+        .bottle-shift-left {
+            transform: translateX(-30px) scale(0.98);
+        }
+
+        /* background video section – like image 3: video + big bold font */
+        .video-story {
+            height: 90vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            overflow: hidden;
+            background: #2d241e;
+        }
+        .bg-video {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .video-overlay {
+            position: relative;
+            z-index: 2;
+            max-width: 700px;
+            padding: 2rem;
+        }
+        .video-overlay h2 {
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .video-overlay p {
+            font-size: 1.6rem;
+            font-weight: 300;
+            margin-top: 1rem;
+        }
+
+        /* product showcase – dual bottle (image 4 / 5) with dynamic motion + bold font */
+        .dual-product {
+            padding: 5rem 5%;
+            background: #fcf6f0;
+        }
+        .product-row {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .product-card {
+            flex: 1 1 300px;
+            background: #ffeadd;
+            border-radius: 40px;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 25px 35px -10px rgba(169, 126, 104, 0.3);
+            will-change: transform;
+        }
+        .product-card:first-child {
+            background: #f5ddd1;
+        }
+        .product-card:nth-child(2) {
+            background: #ecd9cd;
+        }
+        .product-img {
+            max-width: 200px;
+            margin-bottom: 2rem;
+            transition: transform 0.2s;
+        }
+        .product-card h3 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #3a2a21;
+            transition: font-weight 0.3s, transform 0.3s;
+        }
+        .product-card .weight {
+            color: #6e4f40;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+        .price {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: #976b56;
+        }
+        /* motion class triggered by scroll */
+        .product-move-right {
+            transform: translateX(60px) scale(1.03);
+        }
+        .product-move-right .product-img {
+            transform: rotate(3deg) scale(1.05);
+        }
+        .product-move-right h3 {
+            font-weight: 700;  /* becomes bolder */
+            transform: scale(1.02);
+        }
+        .product-move-left {
+            transform: translateX(-40px) scale(0.98);
+        }
+
+        /* find us / near me (image 6) */
+        .find-section {
+            background: #bca393;
+            color: white;
+            padding: 4rem 5%;
+            text-align: center;
+        }
+        .find-content h2 {
+            font-size: 3rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+        .find-content p {
+            font-size: 1.2rem;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+        }
+        .find-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .find-buttons .btn {
+            background: white;
+            color: #b4826e;
+        }
+
+        /* born / raised (image 7) */
+        .born-raised {
+            padding: 5rem 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f2e2d8;
+            flex-wrap: wrap;
+        }
+        .born-text {
+            font-size: 3.5rem;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+        .born-text small {
+            display: block;
+            font-size: 1.3rem;
+            color: #6e4f40;
+        }
+
+        /* cocktail recipes – slider style (image 8/9) : card slides from right */
+        .recipe-showcase {
+            padding: 5rem 5%;
+            background: #fff8f2;
+            overflow-x: clip;
+        }
+        .recipe-slider {
+            display: flex;
+            gap: 2rem;
+            justify-content: flex-start;
+            transform: translateX(0);
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .recipe-card {
+            min-width: 280px;
+            background: white;
+            border-radius: 32px;
+            padding: 2rem 1.8rem;
+            box-shadow: 0 20px 25px -8px #e2cbbc;
+            border: 1px solid #f7e3d6;
+            transition: 0.2s;
+        }
+        .recipe-card h4 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+        }
+        .recipe-card ul {
+            list-style: none;
+        }
+        .recipe-card li {
+            padding: 0.4rem 0;
+            border-bottom: 1px dashed #e2cfc0;
+        }
+        .slider-container {
+            position: relative;
+        }
+        .slider-cta {
+            text-align: right;
+            margin-top: 2rem;
+        }
+        .slider-cta button {
+            background: none;
+            border: 2px solid #cf9e8c;
+            padding: 0.6rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #cf9e8c;
+        }
+
+        /* video community grid (image 11) */
+        .community-videos {
+            padding: 5rem 5%;
+            background: #f6ebe3;
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .video-thumb {
+            background: #2d241e;
+            border-radius: 28px;
+            aspect-ratio: 9/16;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: 0.3s;
+            background-size: cover;
+            background-position: center;
+        }
+        .video-thumb:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 30px black;
+        }
+        .video-thumb i {
+            background: rgba(255,255,255,0.3);
+            padding: 1rem;
+            border-radius: 50%;
+        }
+
+        /* footer / index style (image 12) */
+        footer {
+            background: #342a24;
+            color: #f0ded3;
+            padding: 3rem 5% 2rem;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+            gap: 2rem;
+        }
+        .footer-grid h5 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        .footer-grid a {
+            display: block;
+            color: #dbbcac;
+            text-decoration: none;
+            margin: 0.5rem 0;
+        }
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .social-icons i {
+            font-size: 1.5rem;
+            color: #dbbcac;
+        }
+        .newsletter {
+            grid-column: span 2;
+        }
+        .newsletter input {
+            padding: 0.8rem 1rem;
+            border-radius: 40px;
+            border: none;
+            width: 70%;
+            margin-right: 0.5rem;
+        }
+        .windows-watermark {
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            color: #7a685e;
+            border-top: 1px solid #5d4b41;
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+
+        /* misc */
+        .scroll-hint {
+            opacity: 0.5;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">try<span>'o'</span>some</div>
+        <div class="nav-links">
+            <a href="#">Skin</a>
+            <a href="#">Face</a>
+            <a href="#">Eyes</a>
+            <a href="#">Lips</a>
+            <a href="#"><i class="fas fa-search"></i></a>
+            <a href="#"><i class="fas fa-user"></i></a>
+            <a href="#"><i class="fas fa-shopping-bag"></i></a>
+        </div>
+    </div>
+
+    <!-- HERO (image 1 & 2: bottle moves side to side on scroll) -->
+    <section class="hero" id="hero">
+        <div class="hero-grid">
+            <div class="hero-text">
+                <h1>THE GLOW <span>YOU'LL REMEMBER</span></h1>
+                <p>Try 'o' Some is built for real beauty, not filters. The ultimate culture collab for your skin.</p>
+                <a href="#" class="btn">SHOP NOW</a>
+                <div class="scroll-hint"><i class="fas fa-arrow-down"></i> scroll to move the bottle</div>
+            </div>
+            <div class="hero-bottle" id="heroBottle">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 600'%3E%3Crect width='150' height='400' x='75' y='150' rx='60' fill='%23f0cfc0'/%3E%3Crect width='100' height='70' x='100' y='100' rx='20' fill='%23e3b9a5'/%3E%3Ccircle cx='150' cy='450' r='30' fill='%23d9a185'/%3E%3Ctext x='110' y='300' fill='%23a3583d' font-size='36' font-weight='bold'%3E✧%3C/text%3E%3C/svg%3E" alt="Tryosome serum bottle">
+            </div>
+        </div>
+    </section>
+
+    <!-- BACKGROUND VIDEO (image 3) – attractive font style -->
+    <section class="video-story">
+        <video class="bg-video" autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/40770/40770-720.mp4" type="video/mp4">
+            <!-- fallback: abstract makeup video background -->
+        </video>
+        <div class="video-overlay">
+            <h2>UNLEASH<br>THE SPIRIT</h2>
+            <p>radiance in motion</p>
+        </div>
+    </section>
+
+    <!-- DUAL PRODUCT (image 4 / 5) two bottles moving opposite directions + bold font -->
+    <section class="dual-product" id="dualProduct">
+        <div class="product-row">
+            <div class="product-card" id="leftProduct">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='250' viewBox='0 0 100 200'%3E%3Crect x='25' y='20' width='50' height='140' rx='20' fill='%23eedacf'/%3E%3Ccircle cx='50' cy='170' r='15' fill='%23d9a185'/%3E%3Ctext x='35' y='100' fill='%23a84f2c' font-size='18'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E" class="product-img">
+                <h3>BLITZ<br>ESSENCE</h3>
+                <div class="weight">ANTI-AGING · 50G</div>
+                <span class="price">$49</span>
+            </div>
+            <div class="product-card" id="rightProduct">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='250' viewBox='0 0 100 200'%3E%3Crect x='30' y='30' width='40' height='130' rx='15' fill='%23dac1b3'/%3E%3Ccircle cx='50' cy='170' r='14' fill='%23bc8a72'/%3E%3Ctext x='40' y='100' fill='%23945f45' font-size='18'%3E%E2%9C%A7%3C/text%3E%3C/svg%3E" class="product-img">
+                <h3>GLOW DROPS</h3>
+                <div class="weight">VITAMIN C · 30ML</div>
+                <span class="price">$39</span>
+            </div>
+        </div>
+        <p style="text-align:center; margin-top:1.5rem; color:#976b56;"><i class="fas fa-arrows-left-right"></i> scroll to move & bolden</p>
+    </section>
+
+    <!-- FIND US / ORDER ONLINE (image 6) -->
+    <section class="find-section">
+        <div class="find-content">
+            <h2>FIND US OR ORDER ONLINE.</h2>
+            <p>Find Try 'o' Some at select stores, or buy online now with shipping across the country.</p>
+            <div class="find-buttons">
+                <a href="#" class="btn btn-outline" style="background:white; color:#b4826e;">FIND NEAR ME</a>
+                <a href="#" class="btn" style="background:#8b5f50;">BUY ONLINE</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BORN IN / RAISED (image 7) motion in fonts via scroll -->
+    <section class="born-raised" id="bornRaised">
+        <div class="born-text" id="bornLine">
+            <small>BORN IN</small> 
+            <span id="bornWord">MEXICO.</span>
+        </div>
+        <div class="born-text" id="raisedLine">
+            <small>RAISED IN</small> 
+            <span id="raisedWord">PENNSYLVANIA.</span>
+        </div>
+    </section>
+
+    <!-- RECIPE CARDS (image 8/9) slide from right effect -->
+    <section class="recipe-showcase">
+        <h2 style="font-size:3rem; margin-bottom:2rem;">#tryosome recipes</h2>
+        <div class="slider-container">
+            <div class="recipe-slider" id="recipeSlider">
+                <div class="recipe-card"><h4>@OLIVIA</h4><ul><li>Tryosome Glow Drops</li><li>Sparkling Lime</li><li>Ice</li></ul></div>
+                <div class="recipe-card"><h4>@MAYA</h4><ul><li>Tryosome Blitz</li><li>Rose water</li><li>Aloe vera</li></ul></div>
+                <div class="recipe-card"><h4>@GRILLEDCHEESUS</h4><ul><li>Tryosome drops</li><li>Apple cider</li><li>Lemon</li><li>Rosehip oil</li></ul></div>
+                <div class="recipe-card"><h4>@TY</h4><ul><li>Tryosome essence</li><li>Pink lemonade</li><li>Mint</li></ul></div>
+                <div class="recipe-card"><h4>@CHLOE</h4><ul><li>Vitamin C drops</li><li>Coconut water</li><li>Ice</li></ul></div>
+            </div>
+        </div>
+        <div class="slider-cta">
+            <button id="slideTrigger"><i class="fas fa-arrow-right"></i> slide more recipes</button>
+        </div>
+    </section>
+
+    <!-- COMMUNITY HIGHLIGHTS (image 11) video grid -->
+    <section class="community-videos">
+        <h2 style="font-size:2.5rem;">COMMUNITY HIGHLIGHTS</h2>
+        <p style="margin-bottom:1rem;">@tryosome · make it happen every day</p>
+        <div class="videos-grid">
+            <div class="video-thumb" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://images.pexels.com/photos/6620416/pexels-photo-6620416.jpeg?auto=compress&cs=tinysrgb&w=400')"><i class="fas fa-play"></i></div>
+            <div class="video-thumb" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://images.pexels.com/photos/7462809/pexels-photo-7462809.jpeg?auto=compress&cs=tinysrgb&w=400')"><i class="fas fa-play"></i></div>
+            <div class="video-thumb" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://images.pexels.com/photos/5076519/pexels-photo-5076519.jpeg?auto=compress&cs=tinysrgb&w=400')"><i class="fas fa-play"></i></div>
+            <div class="video-thumb" style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=400')"><i class="fas fa-play"></i></div>
+        </div>
+    </section>
+
+    <!-- FOOTER / INDEX (image 12) -->
+    <footer>
+        <div class="footer-grid">
+            <div>
+                <h5>Shop</h5>
+                <a href="#">Order Serums</a>
+                <a href="#">Order Blitz</a>
+                <a href="#">Find in Stores</a>
+                <a href="#">Merch</a>
+            </div>
+            <div>
+                <h5>Connect</h5>
+                <a href="#">Instagram</a>
+                <a href="#">YouTube</a>
+                <a href="#">Facebook</a>
+                <a href="#">TikTok</a>
+            </div>
+            <div>
+                <h5>Info</h5>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="newsletter">
+                <h5>JOIN THE CREW</h5>
+                <p>Stay in the loop with offers & first access.</p>
+                <input type="email" placeholder="Enter your email">
+                <button class="btn" style="padding:0.7rem 1.5rem;">SUBSCRIBE</button>
+                <div class="social-icons">
+                    <i class="fab fa-instagram"></i>
+                    <i class="fab fa-facebook"></i>
+                    <i class="fab fa-youtube"></i>
+                </div>
+            </div>
+        </div>
+        <div class="windows-watermark">
+            Activate Windows · Go to Settings and click on "Tryosome"
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            // --- SCROLL-BASED MOTION (images 1-5 and 7) ---
+            const heroBottle = document.getElementById('heroBottle');
+            const leftProduct = document.getElementById('leftProduct');
+            const rightProduct = document.getElementById('rightProduct');
+            const bornWord = document.getElementById('bornWord');
+            const raisedWord = document.getElementById('raisedWord');
+
+            window.addEventListener('scroll', function() {
+                const scrollY = window.scrollY;
+                const winHeight = window.innerHeight;
+
+                // hero bottle shift (like images 1-2)
+                if (heroBottle) {
+                    let moveX = (scrollY * 0.15) % 60; // smooth oscillation
+                    if (scrollY % 120 < 60) {
+                        heroBottle.style.transform = `translateX(${20 + moveX}px) scale(1.02)`;
+                    } else {
+                        heroBottle.style.transform = `translateX(${60 - moveX}px) scale(0.98)`;
+                    }
+                }
+
+                // dual product movement + bold font (image 4/5)
+                const dualSection = document.getElementById('dualProduct');
+                if (dualSection) {
+                    const rect = dualSection.getBoundingClientRect();
+                    const progress = Math.min(1, Math.max(0, (winHeight - rect.top) / (winHeight + rect.height)));
+                    if (rect.top < winHeight && rect.bottom > 0) {
+                        let intensity = Math.sin(progress * Math.PI) * 1.2; // bounce
+                        if (leftProduct) {
+                            leftProduct.style.transform = `translateX(${-20 - intensity * 25}px) scale(${1 - intensity*0.03})`;
+                            leftProduct.querySelector('h3').style.fontWeight = 500 + Math.floor(intensity * 200);
+                        }
+                        if (rightProduct) {
+                            rightProduct.style.transform = `translateX(${20 + intensity * 30}px) scale(${0.98 + intensity*0.05})`;
+                            rightProduct.querySelector('h3').style.fontWeight = 500 + Math.floor(intensity * 300);
+                        }
+                    }
+                }
+
+                // born/raised font motion (image 7)
+                const bornSection = document.getElementById('bornRaised');
+                if (bornSection) {
+                    const rect = bornSection.getBoundingClientRect();
+                    if (rect.top < winHeight-100 && rect.bottom > 200) {
+                        let weight = 300 + Math.floor((winHeight - rect.top) / 8);
+                        if (bornWord) bornWord.style.fontWeight = Math.min(700, weight);
+                        if (raisedWord) raisedWord.style.fontWeight = Math.min(700, weight + 100);
+                        if (bornWord) bornWord.style.transform = `translateX(${(winHeight - rect.top) * 0.05}px)`;
+                    }
+                }
+            });
+
+            // --- recipe slider (image 8/9) slide from right on click ---
+            let slideIndex = 0;
+            const slider = document.getElementById('recipeSlider');
+            const slideTrigger = document.getElementById('slideTrigger');
+            const cards = document.querySelectorAll('.recipe-card');
+            if (slider && cards.length) {
+                const cardWidth = cards[0].offsetWidth + 32; // width + gap
+                slideTrigger.addEventListener('click', () => {
+                    slideIndex = (slideIndex + 1) % cards.length;
+                    slider.style.transform = `translateX(-${slideIndex * cardWidth}px)`;
+                });
+            }
+
+            // video thumb click: full video simulation (image 11)
+            const thumbs = document.querySelectorAll('.video-thumb');
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    alert('🎥 Full video would open here — Try \'o\' Some community reel');
+                });
+            });
+        })();
+    </script>
+    <!-- extra note: windows activation mimics the PNG detail, placed in footer -->
+</body>
+</html>
